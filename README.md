@@ -1,5 +1,5 @@
 # humhub-feedrss
-This script is a workaround that allows HumHub to have RSS feeds of a profile's public posts.
+This script is a workaround that allows HumHub to have RSS activity feeds of a profile's public posts.
 
 This script depends on Parsedown - https://github.com/erusev/parsedown
 # How to install
