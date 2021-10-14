@@ -11,20 +11,26 @@ https://www.paypal.com/paypalme/francescoceliento
 
 Git Repository and tutorial - https://github.com/FrancescoCeliento/humhub-feedrss
 */
-
+error_reporting(0);
 require_once('Parsedown.php');
 
 $setting = array();
-$setting['title'] = 'INSERT HUMHUB NAME'; 
+$setting['title'] = 'INSERT HUMHUB NAME';
 $setting['link'] = 'INSERT HUMHUB ROOT LINK';
-$setting['description'] = 'RSS adapter for HumHub.com - Powered by https://github.com/FrancescoCeliento/humhub-feedrss';
+$setting['description'] = 'RSS adapter for HumHub.com - Source script https://github.com/FrancescoCeliento/humhub-feedrss';
 $host = $setting['link'];
 $dbhost = 'INSERT DB HOST';
 $dbname = 'INSERT DB NAME';
 $dbuser = 'INSERT DB USER';
 $dbpass = 'INSERT DB PASSWORD';
 
-$cguid = $_GET["cguid"];
+if (isset($_GET["cguid"])){
+	$cguid = $_GET["cguid"];
+}
+
+if (isset($_GET["r"])) {
+	$r = $_GET["r"];
+}
 
 function execute_query_torss($query,$setting, $host, $database, $user, $password) {
 
@@ -80,26 +86,58 @@ function execute_query_torss($query,$setting, $host, $database, $user, $password
 
 }
 
+if (isset($cguid) && isset($r) && $r == 'user/profile') {
+$query = "SELECT p.created_at AS pubDate, 
+				 p.message AS title, 
+				 c.id AS link, 
+				 p.message AS description, 
+				 concat(pr.firstname,' ', pr.lastname) AS author 
+			FROM content c, 
+				 post p, 
+				 user u, 
+				 profile pr 
+		   WHERE u.guid = '$cguid' 
+		     AND u.id = p.created_by 
+			 AND p.id = c.object_id 
+			 AND c.visibility = 1 
+			 AND c.object_model = 'humhub\\\modules\\\post\\\models\\\Post' 
+			 AND pr.user_id = u.id 
+		ORDER BY p.created_at DESC ";
+		
+} else if (isset($cguid) && isset($r) && $r == 'space/space') {
+$query = "SELECT p.created_at AS pubDate,
+	             p.message AS title, 
+	             c.id AS link, 
+	             p.message AS description,
+	             concat(pr.firstname,' ', pr.lastname) AS author
+		    FROM space s,
+			     contentcontainer cc,
+				 content c,
+				 post p,
+				 user u,
+				 profile pr
+		   WHERE s.guid = '$cguid' 
+				 AND cc.pk = s.id
+				 AND c.contentcontainer_id = cc.id
+				 AND c.visibility = 1
+				 AND c.object_model = 'humhub\\\modules\\\post\\\models\\\Post' 
+				 AND p.id = c.object_id
+				 AND u.id = p.created_by
+				 AND pr.user_id = u.id
+	    ORDER BY p.created_at DESC";
+	 
+} else {
 
-$query = "SELECT p.created_at AS pubDate, ".
-	 "	 p.message AS title, ".
-	 "   c.id AS link, ".
-	 "	 p.message AS description, ".
-	 " 	 concat(pr.firstname,' ', pr.lastname) AS author ".
-	 "  FROM content c, ".
-	 "  	 post p, ".
-	 "  	 user u, ".
-	 " 	 profile pr ".
-	 " WHERE u.guid = '$cguid' ".
-	 "   AND u.id = p.created_by ".
-	 "   AND p.id = c.object_id ".
-	 "   AND c.visibility = 1 ".
-	 "   AND c.object_model = 'humhub\\\modules\\\post\\\models\\\Post' ".
-	 "   AND pr.user_id = u.id ".
-	 " ORDER BY p.created_at DESC ";
-		  
-if (isset($_GET["cguid"])) {
-	echo execute_query_torss($query,$setting,$dbhost,$dbname,$dbuser,$dbpass);
+$query = "SELECT ' ' AS pubDate,
+	               ' ' AS title,
+	               ' ' AS link,
+	               ' ' AS description,
+	               ' ' AS author
+		        FROM DUAL
+		       WHERE 1 = 2";
+
 }
 		  
+echo execute_query_torss($query,$setting,$dbhost,$dbname,$dbuser,$dbpass);
+
 ?>
