@@ -3,9 +3,9 @@ This script is a workaround that allows HumHub to have RSS activity feeds of a p
 
 This script depends on Parsedown - https://github.com/erusev/parsedown
 # How to install
-- Download rss.php
-- Download Parsedown.php from https://github.com/erusev/parsedown
-- Upload into your HumHub root rss.php and Parsedown.php
+- Download *rss.php* file
+- Download *Parsedown.php* file (Original source: https://github.com/erusev/parsedown)
+- Upload into your **HumHub root** *rss.php* and *Parsedown.php*
 
 # How to use
 - Open a user's profile on your humhub
@@ -14,6 +14,6 @@ This script depends on Parsedown - https://github.com/erusev/parsedown
 - The rss feed displays all public messages left by the account on its profile and in all public spaces
 - Let's go and love HumHub and opensource
 
-If you can and would like you can buy me a coffee. If you can't it's not a problem. Thank you.
-https://ko-fi.com/selectallfromdual
+If you can and would like you can buy me a coffee. If you can't it's not a problem. Thank you.  
+https://ko-fi.com/selectallfromdual  
 https://www.paypal.com/paypalme/francescoceliento
