@@ -30,9 +30,13 @@ $config = yii\helpers\ArrayHelper::merge(
 
 require_once('Parsedown.php');
 
+$fulllink = htmlspecialchars((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]");
+$excludefromlink = explode('/',$fulllink)[sizeof(explode('/',$fulllink))-1];
+$link = str_replace($excludefromlink,'',$fulllink);
+
 $setting = array();
 $setting['title'] = $config['name'];
-$setting['link'] = htmlspecialchars((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]");
+$setting['link'] = $link;
 $setting['description'] = 'RSS adapter for HumHub.com - Source script https://github.com/FrancescoCeliento/humhub-feedrss';
 $host = $setting['link'];
 $dbhost = $config['params']['installer']['db']['installer_hostname'];
@@ -52,30 +56,36 @@ function execute_query_torss($query,$setting, $host, $database, $user, $password
 
 	$messaggioerrore = "Connection failed";
 
-	$conn = new PDO("mysql:host=$host; dbname=$database", $user, $password);
+	$conn = new PDO("mysql:host=$host; dbname=$database;charset=utf8", $user, $password);
 	
         $rss = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" />');
 
         $channel = $rss->addChild('channel');
-        $atomlink=$channel->addChild('link','',$setting['link']); 
+        $channel->addChild('title', $setting['title']);
+		
+		$atomlink=$channel->addChild('atom:link','',"http://www.w3.org/2005/Atom"); 
 		$atomlink->addAttribute('href',$setting['link']); 
 		$atomlink->addAttribute('rel',"self"); 
 		$atomlink->addAttribute('type',"application/rss+xml");
-        
-        $channel->addChild('title', $setting['title']);
+		
         $channel->addChild('link', $setting['link']);
         $channel->addChild('description', $setting['description']);
+		
         $stmt = $conn->query($query);
 
+		$i=0;
         while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+				if ($i==0) {
+					$channel->addChild('lastBuildDate', $row['pubDate']);
+				}
                 $item = $channel->addChild('item');
                 foreach ($row as $key => $value) {
                        
                         if ($key == "description" || $key == "title") {
 								$Parsedown = new Parsedown();
-                                $value = utf8_encode($value);
 								$value = $Parsedown->text($value);
 								$value = strip_tags($value);
+								$value = stripslashes($value);
 								
 								if ($key == "title") {
 								
@@ -86,12 +96,14 @@ function execute_query_torss($query,$setting, $host, $database, $user, $password
 								}
                         }
                         
-                        if ($key == "link") {
-                                $value = $setting['link']."/index.php?r=content%2Fperma&id=".$value;
+                        if ($key == "link" || $key == "guid") {
+                                $value = $setting['link']."index.php?r=content%2Fperma&id=".$value;
                         }
                         
                         $item->addChild($key, htmlspecialchars($value));
                 }
+				
+				$i++;
         }
 
        header('Content-type: text/xml');
@@ -103,11 +115,11 @@ function execute_query_torss($query,$setting, $host, $database, $user, $password
 }
 
 if (isset($cguid) && isset($r) && ($r == 'user/profile' || $r == 'user/profile/home')) {
-$query = "SELECT p.created_at AS pubDate, 
+$query = "SELECT DATE_FORMAT(p.created_at,'%a, %d %b %Y %H:%i:%s +0000') AS pubDate, 
 				 p.message AS title, 
 				 c.id AS link, 
-				 p.message AS description, 
-				 concat(pr.firstname,' ', pr.lastname) AS author 
+				 c.id AS guid, 
+				 p.message AS description
 			FROM content c, 
 				 post p, 
 				 user u, 
@@ -121,11 +133,11 @@ $query = "SELECT p.created_at AS pubDate,
 		ORDER BY p.created_at DESC ";
 		
 } else if (isset($cguid) && isset($r) && $r == 'space/space') {
-$query = "SELECT p.created_at AS pubDate,
+$query = "SELECT DATE_FORMAT(p.created_at,'%a, %d %b %Y %H:%i:%s +0000') AS pubDate,
 	             p.message AS title, 
 	             c.id AS link, 
-	             p.message AS description,
-	             concat(pr.firstname,' ', pr.lastname) AS author
+				 c.id AS guid, 
+	             p.message AS description
 		    FROM space s,
 			     contentcontainer cc,
 				 content c,
@@ -147,8 +159,8 @@ $query = "SELECT p.created_at AS pubDate,
 $query = "SELECT ' ' AS pubDate,
 	               ' ' AS title,
 	               ' ' AS link,
-	               ' ' AS description,
-	               ' ' AS author
+	               ' ' AS guid,
+	               ' ' AS description
 		        FROM DUAL
 		       WHERE 1 = 2";
 
