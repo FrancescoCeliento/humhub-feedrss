@@ -102,7 +102,7 @@ function execute_query_torss($query,$setting, $host, $database, $user, $password
 
 }
 
-if (isset($cguid) && isset($r) && $r == 'user/profile') {
+if (isset($cguid) && isset($r) && ($r == 'user/profile' || $r == 'user/profile/home')) {
 $query = "SELECT p.created_at AS pubDate, 
 				 p.message AS title, 
 				 c.id AS link, 
