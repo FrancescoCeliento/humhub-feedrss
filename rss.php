@@ -12,17 +12,33 @@ https://www.paypal.com/paypalme/francescoceliento
 Git Repository and tutorial - https://github.com/FrancescoCeliento/humhub-feedrss
 */
 error_reporting(0);
+
+defined('YII_DEBUG') or define('YII_DEBUG', false);
+defined('YII_ENV') or define('YII_ENV', 'dev');
+
+require(__DIR__ . '/protected/vendor/autoload.php');
+require(__DIR__ . '/protected/vendor/yiisoft/yii2/Yii.php');
+
+
+$config = yii\helpers\ArrayHelper::merge(
+    require(__DIR__ . '/protected/humhub/config/common.php'),
+    require(__DIR__ . '/protected/humhub/config/web.php'),
+    (is_readable(__DIR__ . '/protected/config/dynamic.php')) ? require(__DIR__ . '/protected/config/dynamic.php') : [],
+    require(__DIR__ . '/protected/config/common.php'),
+    require(__DIR__ . '/protected/config/web.php')
+);
+
 require_once('Parsedown.php');
 
 $setting = array();
-$setting['title'] = 'INSERT HUMHUB NAME';
-$setting['link'] = 'INSERT HUMHUB ROOT LINK';
+$setting['title'] = $config['name'];
+$setting['link'] = htmlspecialchars((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]");
 $setting['description'] = 'RSS adapter for HumHub.com - Source script https://github.com/FrancescoCeliento/humhub-feedrss';
 $host = $setting['link'];
-$dbhost = 'INSERT DB HOST';
-$dbname = 'INSERT DB NAME';
-$dbuser = 'INSERT DB USER';
-$dbpass = 'INSERT DB PASSWORD';
+$dbhost = $config['params']['installer']['db']['installer_hostname'];
+$dbname = $config['params']['installer']['db']['installer_database'];
+$dbuser = $config['components']['db']['username'];
+$dbpass = $config['components']['db']['password'];
 
 if (isset($_GET["cguid"])){
 	$cguid = $_GET["cguid"];
@@ -63,8 +79,8 @@ function execute_query_torss($query,$setting, $host, $database, $user, $password
 								
 								if ($key == "title") {
 								
-									if (strlen($value) > (160 - strlen($setting['link'].'/index.php?r=content%2Fperma&id=xxxxxxxxxxx') - 4)) {
-										$value = substr($value,0,160 - strlen($setting['link'].'/index.php?r=content%2Fperma&id=xxxxxxxxxxx') - 4).' ...';
+									if (strlen($value) > (260 - strlen($setting['link'].'/index.php?r=content%2Fperma&id=xxxxxxxxxxx') - 4)) {
+										$value = substr($value,0,260 - strlen($setting['link'].'/index.php?r=content%2Fperma&id=xxxxxxxxxxx') - 4).' ...';
 									 }
 								
 								}
