@@ -5,7 +5,6 @@ This script depends on Parsedown - https://github.com/erusev/parsedown
 # How to install
 - Download rss.php
 - Download Parsedown.php from https://github.com/erusev/parsedown
-- Edit rss.php and insert your HumHub Name, Root link, Database host, name, user and password
 - Upload into your HumHub root rss.php and Parsedown.php
 
 # How to use
