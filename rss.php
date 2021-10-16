@@ -34,6 +34,10 @@ $fulllink = htmlspecialchars((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 
 $excludefromlink = explode('/',$fulllink)[sizeof(explode('/',$fulllink))-1];
 $link = str_replace($excludefromlink,'',$fulllink);
 
+if (isset($_GET['cid'])) {
+	header("location: ".$link."index.php?r=content%2Fperma&id=".$_GET['cid']);
+}
+
 $setting = array();
 $setting['title'] = $config['name'];
 $setting['link'] = $link;
@@ -89,15 +93,15 @@ function execute_query_torss($query,$setting, $host, $database, $user, $password
 								
 								if ($key == "title") {
 								
-									if (strlen($value) > (260 - strlen($setting['link'].'/index.php?r=content%2Fperma&id=xxxxxxxxxxx') - 4)) {
-										$value = substr($value,0,260 - strlen($setting['link'].'/index.php?r=content%2Fperma&id=xxxxxxxxxxx') - 4).' ...';
+									if (strlen($value) > (260 - strlen($setting['link'].'rss.php?cid=xxxxxxxxxxx') - 4)) {
+										$value = substr($value,0,260 - strlen($setting['link'].'rss.php?cid=xxxxxxxxxxx') - 4).' ...';
 									 }
 								
 								}
                         }
                         
                         if ($key == "link" || $key == "guid") {
-                                $value = $setting['link']."index.php?r=content%2Fperma&id=".$value;
+                                $value = $setting['link']."rss.php?cid=".$value;
                         }
                         
                         $item->addChild($key, htmlspecialchars($value));
