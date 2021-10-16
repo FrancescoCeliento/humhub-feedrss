@@ -31,11 +31,12 @@ $config = yii\helpers\ArrayHelper::merge(
 require_once('Parsedown.php');
 
 $fulllink = htmlspecialchars((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]");
-$excludefromlink = explode('/',$fulllink)[sizeof(explode('/',$fulllink))-1];
-$link = str_replace($excludefromlink,'',$fulllink);
+$excludefromlink = explode('?',$fulllink);
+$link = $excludefromlink[0];
 
 if (isset($_GET['cid'])) {
-	header("location: ".$link."index.php?r=content%2Fperma&id=".$_GET['cid']);
+	$link = str_replace("rss.php","index.php",$link);
+	header("location: ".$link."?r=content%2Fperma&id=".$_GET['cid']);
 }
 
 $setting = array();
@@ -93,15 +94,15 @@ function execute_query_torss($query,$setting, $host, $database, $user, $password
 								
 								if ($key == "title") {
 								
-									if (strlen($value) > (260 - strlen($setting['link'].'rss.php?cid=xxxxxxxxxxx') - 4)) {
-										$value = substr($value,0,260 - strlen($setting['link'].'rss.php?cid=xxxxxxxxxxx') - 4).' ...';
+									if (strlen($value) > (260 - strlen($setting['link'].'?cid=xxxxxxxxxxx') - 4)) {
+										$value = substr($value,0,260 - strlen($setting['link'].'?cid=xxxxxxxxxxx') - 4).' ...';
 									 }
 								
 								}
                         }
                         
                         if ($key == "link" || $key == "guid") {
-                                $value = $setting['link']."rss.php?cid=".$value;
+                                $value = $setting['link']."?cid=".$value;
                         }
                         
                         $item->addChild($key, htmlspecialchars($value));
